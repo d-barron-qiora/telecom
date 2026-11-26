@@ -599,7 +599,7 @@ function statusBanner(){
   if (state.error) return banner('err', el('b',null,'No se pudo leer la información. '), state.error + ' Verifica que la hoja esté compartida como «Cualquier persona con el enlace · Lector».');
   if (state.source === 'snapshot') return banner('', el('b',null,'Instantánea de avance. '), `Datos de la hoja «${CONFIG.SEGUIMIENTO_NOMBRE || CONFIG.SHEET_NAME}» al ${CONFIG.SNAPSHOT_LABEL}. Esta vista no se conecta sola a Google Sheets (el entorno donde se muestra lo impide); la versión publicada en GitHub sí se actualiza en vivo.`);
   if (state.source === 'fallback') return banner('warn', el('b',null,'Mostrando datos de respaldo. '), 'No fue posible leer Google Sheets en este momento' + (state.warn ? ' (' + state.warn + ')' : '') + '. Se volverá a intentar automáticamente.');
-  return banner('', el('b',null,'Datos en vivo. '), `Esta página lee la hoja «${CONFIG.SHEET_NAME}» de Google Sheets y se actualiza sola cada ${CONFIG.REFRESH_MIN} minutos; cualquier cambio en la hoja se refleja aquí. `, state.issues.some(i => i.tone === 'warn') ? el('a',{onclick:() => go('reglas')},'Hay registros por revisar.') : null);
+  return null; // en vivo: sin aviso
 }
 function kpi(lbl, val, o = {}){
   const tag = o.onclick ? 'button' : 'div';
@@ -932,7 +932,7 @@ function render(){
           : state.view === 'calif' ? vCalif(d) : state.view === 'detalle' ? vDetalle(d) : vReglas();
     if (!state.all.length && state.error) nodes = [pageHead('Sin información','No se pudo cargar la hoja.'), statusBanner()];
   } catch (e) { console.error(e); nodes = [el('div',{class:'banner err'}, icon('info'), el('div',null, el('b',null,'Ocurrió un error al dibujar esta vista. '), String(e.message||e)))]; }
-  v.replaceChildren(...nodes); window.scrollTo({top:y});
+  v.replaceChildren(...nodes.filter(Boolean)); window.scrollTo({top:y});
 }
 
 buildNav(); buildFilters(); paintSync();
