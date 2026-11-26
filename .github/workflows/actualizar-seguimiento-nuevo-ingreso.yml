@@ -1,0 +1,24 @@
+# Respaldo opcional: guarda cada 30 min una copia de la hoja en datos/seguimiento.csv.
+# El tablero siempre intenta leer Google Sheets en vivo; esta copia solo se usa si esa lectura falla.
+name: Actualizar datos de respaldo
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descargar hoja SEGUIMIENTO
+        run: |
+          mkdir -p seguimiento-nuevo-ingreso/datos
+          curl -fsSL "https://docs.google.com/spreadsheets/d/1IKQmQLqb9i31gHFSlIP6CSDyucEVqAi5AyQ8R0w6o0E/gviz/tq?tqx=out:csv&sheet=SEGUIMIENTO&headers=1" -o seguimiento-nuevo-ingreso/datos/seguimiento.csv
+      - name: Guardar si hubo cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add seguimiento-nuevo-ingreso/datos/seguimiento.csv
+          git diff --staged --quiet || (git commit -m "Actualizar datos de respaldo" && git push)
